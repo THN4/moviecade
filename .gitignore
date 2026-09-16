@@ -31,3 +31,6 @@ data/raw/*.json
 .DS_Store
 Thumbs.db
 
+# EDA
+script/eda.ipynb
+
