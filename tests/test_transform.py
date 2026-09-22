@@ -2,7 +2,7 @@ import json
 import pytest
 from script.transform import transform_tmdb_data
 
-def test_transform_filters_invalid_movies(tmp_path):
+def test_transform_filters_invalid_movies(monkeypatch, tmp_path):
     # 1. Arrange
     fake_raw_data = [
         # Movie 1: perfect data
@@ -51,14 +51,23 @@ def test_transform_filters_invalid_movies(tmp_path):
         },
     ]
 
-    fake_json_file = tmp_path / "fake_movies_detail.json"
-    fake_json_file.write_text(json.dumps(fake_raw_data), encoding="utf-8")
-
+    fake_movies_datail_path = tmp_path / "fake_movies_detail.json"
+    fake_movies_datail_path.write_text(json.dumps(fake_raw_data), encoding="utf-8")
+    monkeypatch.setattr("script.transform.RAW_MOVIES_DETAIL_PATH", fake_movies_datail_path)
+    
     # 2. Act
-    df_fact, df_genres, df_companies, df_b_genres, df_b_companies = transform_tmdb_data(input_path=fake_json_file)
+    df_fact, df_genres, df_companies, df_b_genres, df_b_companies = transform_tmdb_data()
 
     # 3. Assert
     assert len(df_fact) == 2                     
-    assert df_fact.iloc[0]["movie_id"] == 101      
-    assert df_fact.iloc[4]["release_year"] == 2026  
+    assert df_fact.iloc[0]["movie_id"] == 101    
+    assert df_fact.iloc[1]["movie_id"] == 105      
+    assert df_fact.iloc[1]["release_year"] == 2026  
     assert len(df_genres) == 2                    
+    
+def test_transform_missing_file_raises_error(monkeypatch, tmp_path):
+    non_existent_file = tmp_path / "does_not_exist.json"
+    monkeypatch.setattr("script.transform.RAW_MOVIES_DETAIL_PATH", non_existent_file)
+
+    with pytest.raises(FileNotFoundError):
+        transform_tmdb_data()
