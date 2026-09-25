@@ -71,17 +71,77 @@ current load logic.
 
 ## Data model
 
-| Table | Purpose |
-| --- | --- |
-| `fact_movies` | One row per movie: title, release year, revenue, budget, overview, poster path, and ratings |
-| `dim_genres` | Unique genre IDs and names |
-| `dim_companies` | Unique production company IDs and names |
-| `bridge_movie_genres` | Many-to-many link between movies and genres |
-| `bridge_movie_companies` | Many-to-many link between movies and companies |
+`script/transform.py` turns each eligible TMDB movie detail record into a movie
+row and separates its nested genres and production companies. It returns five
+DataFrames that match the tables defined in [`db/schema.sql`](db/schema.sql).
 
-The bridge tables let the arcade combine movie facts with genre and company
-clues through SQL joins without storing repeated genre or company names in the
-fact table.
+### Transformation rules
+
+| Source data | Rule | Result |
+| :--- | :--- | :--- |
+| Movie details | Keep movies with `revenue > 0`, `budget > 0`, and a `poster_path` | One row per retained movie in `fact_movies` |
+| `id`, `title`, `release_date`, financial and display fields | Rename `id` to `movie_id`; take the year from `release_date` when present | Movie attributes in `fact_movies` |
+| Nested `genres[]` | Deduplicate genres by TMDB genre ID; create one movie–genre pair for each entry | `dim_genres` and `bridge_movie_genres` |
+| Nested `production_companies[]` | Deduplicate companies by TMDB company ID; create one movie–company pair for each entry | `dim_companies` and `bridge_movie_companies` |
+
+**Modeling choice:** genres and companies can each have multiple values per
+movie, so the fact table stores neither as a single column. The two bridge
+tables preserve those many-to-many relationships for SQL joins.
+
+### Schema relationships
+
+```mermaid
+erDiagram
+    fact_movies ||--o{ bridge_movie_genres : movie_id
+    dim_genres ||--o{ bridge_movie_genres : genre_id
+    fact_movies ||--o{ bridge_movie_companies : movie_id
+    dim_companies ||--o{ bridge_movie_companies : company_id
+
+    fact_movies {
+        INTEGER movie_id PK
+        VARCHAR title
+        INTEGER release_year
+        BIGINT revenue
+        BIGINT budget
+        TEXT overview
+        VARCHAR poster_path
+        VARCHAR backdrop_path
+        NUMERIC vote_average
+        TIMESTAMP loaded_at
+    }
+    dim_genres {
+        INTEGER genre_id PK
+        VARCHAR name
+    }
+    dim_companies {
+        INTEGER company_id PK
+        VARCHAR name
+    }
+    bridge_movie_genres {
+        INTEGER movie_id FK
+        INTEGER genre_id FK
+    }
+    bridge_movie_companies {
+        INTEGER movie_id FK
+        INTEGER company_id FK
+    }
+```
+
+### Table dictionary
+
+| Table | Grain and key | Columns / role |
+| :--- | :--- | :--- |
+| **`fact_movies`** | One movie; PK `movie_id` (TMDB ID) | `title`, `release_year`, `revenue`, `budget`, `overview`, `poster_path`, `backdrop_path`, `vote_average`; PostgreSQL sets `loaded_at` by default |
+| **`dim_genres`** | One genre; PK `genre_id` | Genre `name` |
+| **`dim_companies`** | One production company; PK `company_id` | Company `name` |
+| **`bridge_movie_genres`** | One movie–genre pair; composite PK (`movie_id`, `genre_id`) | Both columns are FKs to `fact_movies` and `dim_genres` |
+| **`bridge_movie_companies`** | One movie–company pair; composite PK (`movie_id`, `company_id`) | Both columns are FKs to `fact_movies` and `dim_companies` |
+
+**Transform vs. database:** `loaded_at` is added by PostgreSQL during insert,
+not by the Transform step. The Transform step requires a poster for every
+retained movie even though the SQL column itself allows `NULL`.
+
+### How the games use the model
 
 | Game | Data used |
 | --- | --- |
