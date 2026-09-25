@@ -188,12 +188,3 @@ To practice clean software engineering, this project uses a structured branching
 | 4 | Load & Test: `feature/load` and `feature/pytest-suite` (Upsert to DB, ensure test coverage) |
 | 5 | Games: `feature/arcade-ui` (Build Games 1, 2, and 3 using JOIN queries) |
 | 6 | Release: `docs/readme-updates` (Set up CI via GitHub Actions + finalize README), Merge to `main` |
-
----
-
-## 10. Decision Log (fill in as you go)
-
-> Write a short note every time you make a meaningful decision.
-
-- [date] — Decision: ... Reason: ...
-- [date] — Problem encountered: ... Solved by: ...

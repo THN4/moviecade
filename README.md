@@ -195,6 +195,8 @@ moviecade/
 │   └── pages/                 # Home and three game pages
 ├── .env.example               # Local configuration template
 ├── docker-compose.yml         # PostgreSQL and optional pgAdmin
+├── movie-spec.md              # Project goals, scope, and target architecture
+├── INSTRUCTIONS.md            # AI assistant collaboration guidelines
 └── requirements.txt           # Python dependencies
 ```
 
