@@ -1,6 +1,7 @@
 import pandas as pd
 from sqlalchemy import text
 from script.db import engine
+from script.transform import transform_tmdb_data
 
 
 def load_tmdb_data(
@@ -75,3 +76,9 @@ def load_tmdb_data(
             conn.execute(BRIDGE_MOVIE_GENRES_UPSERT, bridge_genre_rows)
         if bridge_company_rows:
             conn.execute(BRIDGE_MOVIE_COMPANIES_UPSERT, bridge_company_rows)
+
+
+# Local module testing block
+if __name__ == "__main__":
+    df_fact, df_genres, df_companies, df_b_genres, df_b_companies = transform_tmdb_data()
+    load_tmdb_data(df_fact, df_genres, df_companies, df_b_genres, df_b_companies)
