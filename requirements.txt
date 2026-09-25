@@ -1,0 +1,10 @@
+requests           # For TMDB API calls
+python-dotenv      # For loading .env variables
+psycopg2-binary    # PostgreSQL database adapter
+pytest             # Unit testing framework
+requests-mock      # Mocking API calls in Pytest
+streamlit          # Arcade UI frontend
+pandas             # Data transformation helper
+ipython             # Interactive Python shell & display helpers
+sqlalchemy
+Pillow             # Blur and reveal movie posters
