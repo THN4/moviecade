@@ -219,7 +219,3 @@ streamlit run ui/app.py
 The arcade offers Box Office Battle, Guess the Poster, and Movie Detective.
 Poster images are requested from TMDB when the games run. Stop the local
 database with `docker compose down`.
-
-## Notes to expand later
-
-- Document lessons learned and current limitations after final testing.
