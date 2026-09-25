@@ -6,4 +6,5 @@ requests-mock      # Mocking API calls in Pytest
 streamlit          # Arcade UI frontend
 pandas             # Data transformation helper
 ipython             # Interactive Python shell & display helpers
-sqlalchemy  
+sqlalchemy
+Pillow             # Blur and reveal movie posters
